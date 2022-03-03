@@ -27,6 +27,29 @@ public class Layout
         this.positions[i][j] = positions[i][j];
   }
 
+  // Prints to console a representation of this Layout
+  public void printLayout()
+  {
+    // Usually use row major; using column major here just for printing purposes
+    for (int j = 0; j < width; j++)
+      System.out.print(" _");
+    System.out.println();
+
+    for (int i = 0; i < height; i++)
+    {
+      System.out.print('|');
+      for (int j = 0; j < width; j++)
+      {
+        System.out.print(positions[i][j] == -1 ? "X " : "  ");
+      }
+      System.out.print('|');
+      System.out.println();
+    }
+
+    for (int j = 0; j < width; j++)
+      System.out.print(" _");
+    System.out.println();
+  }
 
   // Getters
   public int GetHeight()
@@ -48,4 +71,7 @@ public class Layout
   {
 
   }
+
+
+
 }
