@@ -7,7 +7,7 @@ public class Layout
   int width, height;
   int[][] positions;
 
-  Point start, end;
+  public Point start, end;
 
   // Creates an empty Layout of width x height
   public Layout(int width, int height, Point start, Point end)
