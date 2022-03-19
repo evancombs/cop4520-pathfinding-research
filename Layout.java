@@ -7,7 +7,7 @@ public class Layout
   int width, height;
   int[][] positions;
 
-  public Point start, end;
+  Point start, end;
 
   // Creates an empty Layout of width x height
   public Layout(int width, int height, Point start, Point end)
@@ -68,6 +68,16 @@ public class Layout
   public int GetWidth()
   {
     return width;
+  }
+
+  public Point GetStart()
+  {
+    return start;
+  }
+
+  public Point GetEnd()
+  {
+    return end;
   }
 
   // WIP conversions to convetional graph representation
