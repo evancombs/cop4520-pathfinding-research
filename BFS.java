@@ -8,13 +8,14 @@ public class BFS extends Pathfinder
 
   private class PathNode
   {
-    Point data, parent;
-    public PathNode(Point data, Point parent)
+    Point data;
+    PathNode parent;
+    public PathNode(Point data, PathNode parent)
     {
       this.data = data;
       this.parent = parent;
     }
-    public PathNode(int x, int y, Point parent)
+    public PathNode(int x, int y, PathNode parent)
     {
       this.data = new Point(x,y);
       this.parent = parent;
@@ -25,7 +26,7 @@ public class BFS extends Pathfinder
       return data;
     }
 
-    public Point GetParent()
+    public PathNode GetParent()
     {
       return parent;
     }
@@ -67,11 +68,27 @@ public class BFS extends Pathfinder
       if (temp.GetData().equals(end))
       {
         // WE FOUND THE GOAL
+        while(temp.GetParent() != null)
+        {
+          System.out.println(temp.GetData().toString());
+          temp = temp.GetParent();
+        }
+        return;
       }
       // there are at most four possible edges
       // PathNode adjacent = new PathNode(new Point(0,1))
       ArrayList<Point> adjacentNodes = layout.GetAdjacentPoints(temp.GetData());
+
+      for (Point adjacentNode : adjacentNodes)
+      {
+        if (!visited[adjacentNode.x][adjacentNode.y])
+        {
+          visited[adjacentNode.x][adjacentNode.y] = true;
+          queue.add(new PathNode(adjacentNode, temp));
+        }
+      }
     }
+    System.out.println("No path found from start to end!");
   }
 }
 
