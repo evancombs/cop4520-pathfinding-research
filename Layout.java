@@ -1,4 +1,5 @@
 import java.awt.Point;
+import java.util.ArrayList;
 // Layout is a wrapper class that holds an arrangement of traversable and
 // non-traversable positions, represented as an integer array.
 // A value of -1 represents an unaccesible positions.
@@ -89,6 +90,21 @@ public class Layout
   public static void LayoutToAdjacencyMatrix()
   {
 
+  }
+
+  public ArrayList<Point> GetAdjacentPoints(Point point)
+  {
+    ArrayList<Point> validPoints = new ArrayList<>();
+    if (point.x - 1 >= 0 && point.x - 1 <= width && positions[point.x + 1][point.y] != -1)
+      validPoints.add(new Point(point.x - 1, point.y));
+    if (point.x + 1 >= 0 && point.x + 1 <= width && positions[point.x + 1][point.y] != -1)
+      validPoints.add(new Point(point.x + 1, point.y));
+    if (point.y - 1 >= 0 && point.y - 1 <= width && positions[point.x][point.y - 1] != -1)
+      validPoints.add(new Point(point.x, point.y - 1));
+    if (point.y + 1 >= 0 && point.y + 1 <= width && positions[point.x][point.y + 1] != -1)
+      validPoints.add(new Point(point.x, point.y + 1));
+
+    return validPoints;
   }
 
 

@@ -15,11 +15,14 @@ public class Pathfinding
      {1, 1, 1, 1},
      {1, -1, 1, 1}};
 
-    Layout test = new Layout(testArr, new Point(0,0), new Point(3,3));
+    Layout test = new Layout(testArr, new Point(0,0), new Point(2,3));
     test.printLayout();
 
     Pathfinder example = new ExampleAlgorithm();
 
     example.findPaths(test);
+
+    Pathfinder bfsTest = new BFS();
+    bfsTest.findPaths(test);
   }
 }
