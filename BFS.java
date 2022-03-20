@@ -2,36 +2,12 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BFS extends Pathfinder
 {
-
-  private class PathNode
-  {
-    Point data;
-    PathNode parent;
-    public PathNode(Point data, PathNode parent)
-    {
-      this.data = data;
-      this.parent = parent;
-    }
-    public PathNode(int x, int y, PathNode parent)
-    {
-      this.data = new Point(x,y);
-      this.parent = parent;
-    }
-
-    public Point GetData()
-    {
-      return data;
-    }
-
-    public PathNode GetParent()
-    {
-      return parent;
-    }
-  }
-
   public void findPaths(Layout layout)
   {
     int numThreads = 4;
@@ -92,6 +68,33 @@ public class BFS extends Pathfinder
   }
 }
 
+// PathNode is a wrapper / linked list to keep track
+// of the path we took through the layout / graph
+class PathNode
+{
+  Point data;
+  PathNode parent;
+  public PathNode(Point data, PathNode parent)
+  {
+    this.data = data;
+    this.parent = parent;
+  }
+  public PathNode(int x, int y, PathNode parent)
+  {
+    this.data = new Point(x,y);
+    this.parent = parent;
+  }
+
+  public Point GetData()
+  {
+    return data;
+  }
+
+  public PathNode GetParent()
+  {
+    return parent;
+  }
+}
 
 
 class ThreadRunner implements Runnable
@@ -99,15 +102,39 @@ class ThreadRunner implements Runnable
   Layout layout;
   int numThreads;
   ArrayList<Point> targets;
+
+  AtomicBoolean[][] visited;
+  ConcurrentLinkedQueue<PathNode> queue;
+  Point start;
+  Point end;
+
+  AtomicInteger nodesLeftInLevel = new AtomicInteger();
+
+  AtomicBoolean endflag;
+
   public ThreadRunner(Layout layout, int numThreads)
   {
     this.layout = layout;
     this.numThreads = numThreads;
 
-    FindNodeTargets();
+    start = layout.GetStart();
+    end = layout.GetEnd();
 
-    for (Point point : targets)// debug
-      System.out.println(point.toString());
+    endflag = new AtomicBoolean(true);
+
+    visited = new AtomicBoolean[layout.GetWidth()][layout.GetHeight()];
+
+    // Initialize visited array
+    for (int i = 0; i < layout.GetWidth(); i++)
+    {
+      for (int j = 0; j < layout.GetHeight(); j++)
+      {
+        visited[i][j] = new AtomicBoolean(false);
+      }
+    }
+    queue = new ConcurrentLinkedQueue<>();
+
+    queue.add(new PathNode(start, null));
   }
 
   // FindNodeTargets() draws a line between the start and end, and uses Bresenham's
@@ -140,18 +167,54 @@ class ThreadRunner implements Runnable
     return targets;
   }
 
-  // Parallel idea: Divide the distance between the start and end point
-  // up among the threads, and BFS between each once.
-  // Thread 0 searches from start to target 0, thread 1 searches from target 0
-  // to target 1, and so on.
+  // Parallel idea: Using a ConcurrentLinkedQueue, each thread pops nodes that
+  // need to be explored / checked as they are able to.
+
+  // Notable issue: Breadth-first search requires all nodes of a specified
+  // distance (aka depth or level) are processed before the next distance is.
+  // Therefore, we need to prevent
   public void run()
   {
-    boolean[][] visted = new boolean[layout.GetWidth()][layout.GetHeight()];
+    while(endflag.get() && !queue.isEmpty())
+    {
+      // if (queue.isEmpty())
+        // continue;
+      while (nodesLeftInLevel.get() > 0)
+        ; // Wait until level is complete
+      PathNode temp = queue.poll();
 
-    int id = Integer.parseInt(Thread.currentThread().getName());
-    // To divide the targets up effectively,
+      if (temp == null)
+        continue;
+      if (temp.GetData().equals(end))
+      {
+        // We found the goal! We need to alert all the other threads!
+        endflag.set(false);
 
-    Point threadStart;
-    Point threadEnd;
+        while(temp.GetParent() != null)
+        {
+          System.out.println(temp.GetData().toString());
+          temp = temp.GetParent();
+        }
+        return;
+      }
+      ArrayList<Point> adjacentNodes = layout.GetAdjacentPoints(temp.GetData());
+
+      // We must ensure that adjacent nodes are updated atomically and not added
+      // multiple times.
+      synchronized(this)
+      {
+        for (Point adjacentNode : adjacentNodes)
+        {
+          nodesLeftInLevel.getAndDecrement();
+          // nodesLeftInLevel.getAndAdd(adjacentNodes.size());
+          if (!visited[adjacentNode.x][adjacentNode.y].get())
+          {
+            nodesLeftInLevel.getAndIncrement();
+            visited[adjacentNode.x][adjacentNode.y].set(true);
+            queue.add(new PathNode(adjacentNode, temp));
+          }
+        }
+      }
+    }
   }
 }

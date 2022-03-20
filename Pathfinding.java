@@ -22,10 +22,10 @@ public class Pathfinding
 
     example.findPaths(test);
 
-    test = new Layout("tests/layout2.txt");
+    test = new Layout("tests/layout3.txt");
     test.printLayout();
     BFS bfsTest = new BFS();
-    // bfsTest.findPaths(test);
-    bfsTest.findPathsSequential(test);
+    bfsTest.findPaths(test);
+    // bfsTest.findPathsSequential(test);
   }
 }
