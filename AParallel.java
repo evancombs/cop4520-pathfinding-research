@@ -1,47 +1,81 @@
 import java.util.*;
+import java.awt.Point;
 
-public class A {
+public class AParallel extends Pathfinder {
 
   public static void main(String[] args) {
+    // Basic test case
+    int[][] testArr =
+    {{1, 1, 1, 1},
+     {1, -1, -1, -1},
+     {1, -1, 1, 1},
+     {1, -1, 1, 1},
+     {1, 1, 1, 1}};
 
+     Point start = new Point(0,0);
+     Point end = new Point(3,4);
+
+     AParallel aStar = new AParallel();
+     aStar.findPaths(new Layout(testArr, start, end));
   }
 
-  public static Node aStar(Node start, Node target){
+  @Override
+  public void findPaths(Layout layout) {
+    Node head = new Node(layout.start.x, layout.start.y, 1, false);
+    Node target = new Node(layout.end.x, layout.end.y, 1, false);
+    Node[][] map = new Node[layout.width][layout.height];
+
+    for (int i = 0; i < layout.width; i++) {
+      for (int j = 0; j < layout.height; j++) {
+        map[i][j] = new Node(j, i, 1, layout.positions[i][j] == -1);
+      }
+    }
+
+    head.g = 0;
+
+    Node res = aStar(head, target, map);
+    printPath(res);
+  }
+
+  public static Node aStar(Node start, Node target, Node[][] map){
+      // Left, down-left, down, down-right, right, up-right, up, up-left
+      int[] dx = {-1, -1, 0, 1, 1, 1, 0, -1};
+      int[] dy = {0, -1, -1, -1, 0, 1, 1, 1};
+      double[] moveCost = {1, 1.4, 1, 1.4, 1, 1.4, 1, 1.4};
+
       PriorityQueue<Node> closedList = new PriorityQueue<>();
       PriorityQueue<Node> openList = new PriorityQueue<>();
+
+      ArrayList<AThread> threads = new ArrayList<AThread>();
 
       start.f = start.g + start.calculateHeuristic(target);
       openList.add(start);
 
       while(!openList.isEmpty()){
           Node n = openList.peek();
-          if(n == target){
+          if(n.x == target.x && n.y == target.y){
               return n;
           }
+          // Loop through all the neighbouring nodes
+          for(int i = 0; i < dx.length; i++){
+              // Check if the node is in the bounds of the map
+              if (n.y + dy[i] < 0 || n.y + dy[i] >= map.length) continue;
+              if (n.x + dx[i] < 0 || n.x + dx[i] >= map[n.x].length) continue;
 
-          for(Node.Edge edge : n.neighbors){
-              Node m = edge.node;
-              double totalWeight = n.g + edge.weight;
-
-              if(!openList.contains(m) && !closedList.contains(m)){
-                  m.parent = n;
-                  m.g = totalWeight;
-                  m.f = m.g + m.calculateHeuristic(target);
-                  openList.add(m);
-              } else {
-                  if(totalWeight < m.g){
-                      m.parent = n;
-                      m.g = totalWeight;
-                      m.f = m.g + m.calculateHeuristic(target);
-
-                      if(closedList.contains(m)){
-                          closedList.remove(m);
-                          openList.add(m);
-                      }
-                  }
-              }
+              Node m = map[n.y + dy[i]][n.x + dx[i]];
+              if (m.blocked) continue;
+              AThread thread = new AThread(m, n, target, moveCost[i], openList, closedList);
+              threads.add(thread);
+              thread.start();
           }
+          for (AThread thread: threads) {
+            try {
+              thread.join();
+            }
+            catch(Exception e) {
 
+            }
+          }
           openList.remove(n);
           closedList.add(n);
       }
@@ -50,21 +84,19 @@ public class A {
 
   public static void printPath(Node target){
       Node n = target;
-
-      if(n==null)
-          return;
-
-      List<Integer> ids = new ArrayList<>();
-
+      if (n == null) {
+        System.out.println("No valid path");
+        return;
+      }
+      List<Node> nodes = new ArrayList<>();
       while(n.parent != null){
-          ids.add(n.id);
+          nodes.add(n);
           n = n.parent;
       }
-      ids.add(n.id);
-      Collections.reverse(ids);
-
-      for(int id : ids){
-          System.out.print(id + " ");
+      nodes.add(n);
+      Collections.reverse(nodes);
+      for(Node node : nodes){
+          System.out.print("(" + node.x + ", " + node.y + ") ");
       }
       System.out.println("");
   }
@@ -72,48 +104,28 @@ public class A {
 }
 
 class Node implements Comparable<Node> {
-      // Id for readability of result purposes
-      private static int idCounter = 0;
-      public int id;
+  public int x;
+  public int y;
+  public boolean blocked;
+  public Node parent = null;
 
-      // Parent in the path
-      public Node parent = null;
+  public double f = Double.MAX_VALUE;
+  public double g = Double.MAX_VALUE;
+  public double h;
 
-      public List<Edge> neighbors;
+  Node(int x, int y, double h, boolean blocked){
+    this.x = x;
+    this.y = y;
+    this.h = h;
+    this.blocked = blocked;
+  }
 
-      // Evaluation functions
-      public double f = Double.MAX_VALUE;
-      public double g = Double.MAX_VALUE;
-      // Hardcoded heuristic
-      public double h;
+  @Override
+  public int compareTo(Node n) {
+        return Double.compare(this.f, n.f);
+  }
 
-      Node(double h){
-            this.h = h;
-            this.id = idCounter++;
-            this.neighbors = new ArrayList<>();
-      }
-
-      @Override
-      public int compareTo(Node n) {
-            return Double.compare(this.f, n.f);
-      }
-
-      public static class Edge {
-            Edge(int weight, Node node){
-                  this.weight = weight;
-                  this.node = node;
-            }
-
-            public int weight;
-            public Node node;
-      }
-
-      public void addBranch(int weight, Node node){
-            Edge newEdge = new Edge(weight, node);
-            neighbors.add(newEdge);
-      }
-
-      public double calculateHeuristic(Node target){
-            return this.h;
-      }
+  public double calculateHeuristic(Node target){
+        return this.h;
+  }
 }

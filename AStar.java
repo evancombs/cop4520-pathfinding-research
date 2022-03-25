@@ -1,7 +1,7 @@
 import java.util.*;
 import java.awt.Point;
 
-public class A extends Pathfinder {
+public class AStar extends Pathfinder {
 
   public static void main(String[] args) {
     int[][] testArr =
@@ -14,7 +14,7 @@ public class A extends Pathfinder {
      Point start = new Point(0,0);
      Point end = new Point(3,4);
 
-     A aStar = new A();
+     AStar aStar = new AStar();
      aStar.findPaths(new Layout(testArr, start, end));
   }
 
@@ -22,14 +22,12 @@ public class A extends Pathfinder {
   public void findPaths(Layout layout) {
     Node head = new Node(layout.start.x, layout.start.y, 1, false);
     Node target = new Node(layout.end.x, layout.end.y, 1, false);
+
     Node[][] map = new Node[layout.width][layout.height];
-    for (int i = 0; i < layout.width; i++) {
-      for (int j = 0; j < layout.height; j++) {
+    for (int i = 0; i < layout.width; i++)
+      for (int j = 0; j < layout.height; j++)
         map[i][j] = new Node(j, i, 1, layout.positions[i][j] == -1);
-        // System.out.print(layout.positions[i][j] + " ");
-      }
-      // System.out.println();
-    }
+
     head.g = 0;
 
     Node res = aStar(head, target, map);
@@ -43,7 +41,7 @@ public class A extends Pathfinder {
       // Left, down-left, down, down-right, right, up-right, up, up-left
       int[] dx = {-1, -1, 0, 1, 1, 1, 0, -1};
       int[] dy = {0, -1, -1, -1, 0, 1, 1, 1};
-      int[] moveCost = {1, 2, 1, 2, 1, 2, 1, 2};
+      int[] moveCost = {1, 1.4, 1, 1.4, 1, 1.4, 1, 1.4};
 
       start.f = start.g + start.calculateHeuristic(target);
       openList.add(start);
@@ -80,7 +78,6 @@ public class A extends Pathfinder {
                   }
               }
           }
-
           openList.remove(n);
           closedList.add(n);
       }
@@ -131,6 +128,10 @@ class Node implements Comparable<Node> {
   }
 
   public double calculateHeuristic(Node target){
-        return this.h;
+    int D = 1;
+    int D2 = 2;
+    int dx = Math.abs(x - target.x);
+    int dy = Math.abs(y - target.y);
+    return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
   }
 }
