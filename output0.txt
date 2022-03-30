@@ -1,0 +1,2 @@
+BFS 43.0ms
+AParallel 60.0ms

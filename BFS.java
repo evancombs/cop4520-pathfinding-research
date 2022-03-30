@@ -24,6 +24,16 @@ public class BFS extends Pathfinder
 
     for (Thread thread : threads)
         thread.start();
+
+        try
+        {
+          for (Thread thread : threads)
+            thread.join();
+        }
+        catch (Exception e)
+        {
+          System.out.println("Failed joining threads!");
+        }
   }
 
 
