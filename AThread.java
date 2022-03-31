@@ -1,44 +1,37 @@
 import java.util.*;
+import java.util.concurrent.PriorityBlockingQueue;
 
-public class AThread extends Thread {
+public class AThread implements Runnable {
 
   Node node;
   Node parent;
-  Node target;
   double cost;
+  AParallel path;
 
-  PriorityQueue<Node> openList;
-  PriorityQueue<Node> closedList;
-
-  public AThread(Node node, Node parent, Node target, double cost, PriorityQueue<Node> openList, PriorityQueue<Node> closedList) {
+  public AThread(Node node, Node parent, double cost, AParallel path) {
     this.node = node;
     this.parent = parent;
-    this.target = target;
+    this.path = path;
     this.cost = cost;
-    this.openList = openList;
-    this.closedList = closedList;
   }
 
   public void run() {
-    System.out.println(node.x + " " + node.y + " " + cost);
     double totalCost = parent.g + cost;
-    if(!openList.contains(node) && !closedList.contains(node)){
+    if (!path.openList.contains(node) && !path.closedList.contains(node)){
         node.parent = parent;
         node.g = totalCost;
-        node.f = node.g + node.calculateHeuristic(target);
-        openList.add(node);
+        node.f = node.g + node.calculateHeuristic(path.target);
+        path.openList.add(node);
     } else {
         if(totalCost < node.g){
             node.parent = parent;
             node.g = totalCost;
-            node.f = node.g + node.calculateHeuristic(target);
-            if(closedList.contains(node)){
-                closedList.remove(node);
-                openList.add(node);
+            node.f = node.g + node.calculateHeuristic(path.target);
+            if(path.closedList.contains(node)){
+                path.closedList.remove(node);
+                path.openList.add(node);
             }
         }
     }
   }
-
-
 }

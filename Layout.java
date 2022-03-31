@@ -60,19 +60,24 @@ public class Layout
     }
     this.width = in.nextInt();
     this.height = in.nextInt();
-    this.positions = new int[width][height];
+    this.positions = new int[height][width];
 
-    for(int x = 0; x < width; x++)
+    for(int x = 0; x < height; x++)
     {
-      for(int y = 0; y < height; y++)
+      for(int y = 0; y < width; y++)
       {
         String temp = in.next();
-        if (temp.charAt(0) == 'S')
+        if (temp.charAt(0) == 'S') {
           this.start = new Point(x,y);
-        else if (temp.charAt(0) == 'E')
+          positions[x][y] = 0;
+        }
+        else if (temp.charAt(0) == 'E') {
           this.end = new Point(x,y);
-        else
+          positions[x][y] = 0;
+        }
+        else {
           positions[x][y] = Integer.parseInt(temp);
+        }
       }
     }
   }
