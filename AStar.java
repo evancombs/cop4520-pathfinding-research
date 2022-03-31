@@ -15,23 +15,32 @@ public class AStar extends Pathfinder {
      Point end = new Point(3,4);
 
      AStar aStar = new AStar();
-     aStar.findPaths(new Layout(testArr, start, end));
+     aStar.findPaths(new Layout("./tests/layout5.txt"));
   }
 
   @Override
   public void findPaths(Layout layout) {
-    Node head = new Node(layout.start.x, layout.start.y, 1, false);
-    Node target = new Node(layout.end.x, layout.end.y, 1, false);
+    Node head = new Node(layout.start.x, layout.start.y, false);
+    Node target = new Node(layout.end.x, layout.end.y, false);
 
-    Node[][] map = new Node[layout.width][layout.height];
-    for (int i = 0; i < layout.width; i++)
-      for (int j = 0; j < layout.height; j++)
-        map[i][j] = new Node(j, i, 1, layout.positions[i][j] == -1);
+    Node[][] map = new Node[layout.height][layout.width];
+    for (int i = 0; i < layout.height; i++)
+      for (int j = 0; j < layout.width; j++)
+        map[i][j] = new Node(i, j, layout.positions[i][j] == -1);
 
     head.g = 0;
-
     Node res = aStar(head, target, map);
+    int n = 1;
+    long startTime, endTime, duration = 0;
+    for (int i = 0 ; i < n; i++) {
+      startTime = System.nanoTime();
+      res = aStar(head, target, map);
+      endTime = System.nanoTime();
+      duration += (endTime - startTime);
+    }
     printPath(res);
+    double avg = (double)duration / 1000000 / n;
+    System.out.println(avg);
   }
 
   public static Node aStar(Node start, Node target, Node[][] map){
@@ -41,7 +50,7 @@ public class AStar extends Pathfinder {
       // Left, down-left, down, down-right, right, up-right, up, up-left
       int[] dx = {-1, -1, 0, 1, 1, 1, 0, -1};
       int[] dy = {0, -1, -1, -1, 0, 1, 1, 1};
-      int[] moveCost = {1, 1.4, 1, 1.4, 1, 1.4, 1, 1.4};
+      double[] moveCost = {1, 1.4, 1, 1.4, 1, 1.4, 1, 1.4};
 
       start.f = start.g + start.calculateHeuristic(target);
       openList.add(start);
@@ -53,30 +62,28 @@ public class AStar extends Pathfinder {
           }
 
           for(int i = 0; i < dx.length; i++){
-              if (n.y + dy[i] < 0 || n.y + dy[i] >= map.length) continue;
-              if (n.x + dx[i] < 0 || n.x + dx[i] >= map[n.x].length) continue;
-              Node m = map[n.y + dy[i]][n.x + dx[i]];
-              // System.out.println("(" + m.x + ", " + m.y + ") ");
-              if (m.blocked) continue;
-              double totalCost = n.g + moveCost[i];
+            if (n.x + dx[i] < 0 || n.x + dx[i] >= map.length) continue;
+            if (n.y + dy[i] < 0 || n.y + dy[i] >= map[n.x].length) continue;
+            Node m = map[n.x + dx[i]][n.y + dy[i]];
+            if (m.blocked) continue;
+            double totalCost = n.g + moveCost[i];
+            if(!openList.contains(m) && !closedList.contains(m)){
+              m.parent = n;
+              m.g = totalCost;
+              m.f = m.g + m.calculateHeuristic(target);
+              openList.add(m);
+            } else {
+              if(totalCost < m.g){
+                m.parent = n;
+                m.g = totalCost;
+                m.f = m.g + m.calculateHeuristic(target);
 
-              if(!openList.contains(m) && !closedList.contains(m)){
-                  m.parent = n;
-                  m.g = totalCost;
-                  m.f = m.g + m.calculateHeuristic(target);
+                if(closedList.contains(m)){
+                  closedList.remove(m);
                   openList.add(m);
-              } else {
-                  if(totalCost < m.g){
-                      m.parent = n;
-                      m.g = totalCost;
-                      m.f = m.g + m.calculateHeuristic(target);
-
-                      if(closedList.contains(m)){
-                          closedList.remove(m);
-                          openList.add(m);
-                      }
-                  }
+                }
               }
+            }
           }
           openList.remove(n);
           closedList.add(n);
@@ -115,10 +122,9 @@ class Node implements Comparable<Node> {
   public double g = Double.MAX_VALUE;
   public double h;
 
-  Node(int x, int y, double h, boolean blocked){
+  Node(int x, int y, boolean blocked){
     this.x = x;
     this.y = y;
-    this.h = h;
     this.blocked = blocked;
   }
 
