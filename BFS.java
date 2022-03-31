@@ -84,15 +84,18 @@ class PathNode
 {
   Point data;
   PathNode parent;
-  public PathNode(Point data, PathNode parent)
+  int level;
+  public PathNode(Point data, PathNode parent, int level)
   {
     this.data = data;
     this.parent = parent;
+    this.level = level;
   }
-  public PathNode(int x, int y, PathNode parent)
+  public PathNode(int x, int y, PathNode parent, int level)
   {
     this.data = new Point(x,y);
     this.parent = parent;
+    this.level = level;
   }
 
   public Point GetData()
@@ -103,6 +106,11 @@ class PathNode
   public PathNode GetParent()
   {
     return parent;
+  }
+
+  public int GetLevel()
+  {
+    return level;
   }
 }
 
@@ -118,7 +126,8 @@ class ThreadRunner implements Runnable
   Point start;
   Point end;
 
-  AtomicInteger nodesLeftInLevel = new AtomicInteger();
+  // AtomicInteger nodesLeftInLevel = new AtomicInteger();
+  AtomicInteger currentLevel = new AtomicInteger(0);
 
   AtomicBoolean endflag;
 
@@ -144,7 +153,8 @@ class ThreadRunner implements Runnable
     }
     queue = new ConcurrentLinkedQueue<>();
 
-    queue.add(new PathNode(start, null));
+    // Add the root
+    queue.add(new PathNode(start, null, 0));
   }
 
   // FindNodeTargets() draws a line between the start and end, and uses Bresenham's
@@ -215,11 +225,11 @@ class ThreadRunner implements Runnable
       {
         for (Point adjacentNode : adjacentNodes)
         {
-          nodesLeftInLevel.getAndDecrement();
+          //nodesLeftInLevel.getAndDecrement();
           // nodesLeftInLevel.getAndAdd(adjacentNodes.size());
           if (!visited[adjacentNode.x][adjacentNode.y].get())
           {
-            nodesLeftInLevel.getAndIncrement();
+            // nodesLeftInLevel.getAndIncrement();
             visited[adjacentNode.x][adjacentNode.y].set(true);
             queue.add(new PathNode(adjacentNode, temp));
           }
