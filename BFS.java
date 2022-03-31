@@ -47,7 +47,9 @@ public class BFS extends Pathfinder
     Point end = layout.GetEnd();
 
     visited[start.x][start.y] = true;
-    queue.add(new PathNode(start, null));
+    queue.add(new PathNode(start, null, 0));
+    int level = 0;
+
     while(!queue.isEmpty())
     {
       PathNode temp = queue.remove();
@@ -70,7 +72,7 @@ public class BFS extends Pathfinder
         if (!visited[adjacentNode.x][adjacentNode.y])
         {
           visited[adjacentNode.x][adjacentNode.y] = true;
-          queue.add(new PathNode(adjacentNode, temp));
+          queue.add(new PathNode(adjacentNode, temp, level + 1));
         }
       }
     }
@@ -199,12 +201,16 @@ class ThreadRunner implements Runnable
     {
       // if (queue.isEmpty())
         // continue;
-      while (nodesLeftInLevel.get() > 0)
+      // while (nodesLeftInLevel.get() > 0)
         ; // Wait until level is complete
       PathNode temp = queue.poll();
 
       if (temp == null)
         continue;
+
+      if(temp.GetLevel() >= currentLevel.get())
+        ;
+        
       if (temp.GetData().equals(end))
       {
         // We found the goal! We need to alert all the other threads!
@@ -231,9 +237,10 @@ class ThreadRunner implements Runnable
           {
             // nodesLeftInLevel.getAndIncrement();
             visited[adjacentNode.x][adjacentNode.y].set(true);
-            queue.add(new PathNode(adjacentNode, temp));
+            queue.add(new PathNode(adjacentNode, temp, currentLevel.get() + 1));
           }
         }
+        currentLevel.getAndIncrement();
       }
     }
   }
