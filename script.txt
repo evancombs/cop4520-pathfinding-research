@@ -1,0 +1,82 @@
+Intro
+	"Hello everyone and welcome to our video presentation of our research project."
+
+	"Our project is an exploration of implementation and comparison of various pathfinding algorithm
+	in a concurrent context."
+
+	"Each of our team members will take you through their part of the project. I'm Evan Combs, and 
+	I'm here to give you an introduction to our project."
+	
+	"The goals of our project is mainly one of exploration and data collection.
+	We are interested in benefits and deficits of various algorithms, finding the best algorithsm
+	for a given circumstance, and what kind of applications such algorithms are suited for.
+	
+	"Additionally, we have a focus on the process of converting sequential algorthms to concurrent,
+	and the feasibility of doing so.
+	
+	"Our project is interested in pathfinding, with is a class of problems related to finding a 
+	way to get from one point to another."
+
+	"Pathfinding has many application in gaming, optimization, simulation and more, and is closely
+	related to the shortest path problem in graph theory. Many pathfinding problems are represented
+	and solved as graphs, which is the approach we take."
+
+	"In order to accurately compare differing algorithms we have built and implemented a shared
+	testing framework called Layout. Layout is essentially a ghraph representation data structure,
+	that all our algorithms are built to work on. By compalring them on the same data, we ensure
+	that we have a fair metric to examine them on.
+
+	"Under the covers, layout is a multidimensional array of nodes, each with a cost associated, which is the
+	cost of "entering that position", or taking an edge. This comes with several benefits and drawbacks; it is 
+	rather space inefficient, but good for storing highly connected graphs. It is simialr in concept to an adjacency
+	matrix"
+	
+	"Layouts do not support directed graphs; each edge goes both ways, and either exists or does not. It also does
+	not support negative edge weights, a requirement of Djikstra's algorithm, one of the solutions we explore.
+	It is, however, very fast, to look up graph data, something useful for large graphs and prevents slowdown due to
+	accessing data during solution generation.
+
+BFS
+	"Now I'm going to talk about Breadth-First Search, or BFS. Breadth-First Search is a straightforward algorithm
+	where, beginning at a given start node, all adjacent nodes are examined to determine if the desired node is found.
+	If not, then all nodes adjacent to those nodes are examined, then all adjacent to those, and so on. The key point
+	is that all nodes in an adjacency step are processed before any others. In fact, this can be thought of as "level"
+	where the level of the node is the number of edges between it, and the start node.
+
+	A key observation here is that nodes of a level can be processed in any order; as long as we don't go deeper 
+	until we finish the current level, we can look at the nodes any way. This is the key to parallelization.
+
+	There is, however, a caveat. If we're attempting to process nodes concurrently, we need to make sure
+	that we don't add the same node twice, if it happens to be adjacent to two other nodes at the current level,
+	For example node 5 shown here is adjacent to both 4 and 6. 
+
+ 	To handle this, we simply perform new node addition and marking atomically. With these requirements, we 
+	develop our concurrent BFS pseudocode.
+
+	"This approach is not perfect. It makes heavy use of atomic variables, and the atomic portion of marking and
+	adding is prone to starvation. It is, however, easy to understand, a good starting point for comparison with
+	sequential BFS as well as the other algorithms of interest.
+Testing
+	"Now I'll talk about our testing plan. While part of the project was the possibility of
+	concurrent implementations, another major focus was measuring how these various algorithms line 
+	up. We are able to test the performance of these algorithms against eachother, as well as against
+	their original sequential implementations, by making use of our shared data framework and
+	unit tests.
+
+	At this point in time, we have done testing on one system, but would like to test it on
+	as many systems as possible.
+
+	Here we see the format of our input data; it is very easy to expand our test cases, or 
+	create tools to automatically create layouts.
+	
+	In our testing, our primary metric of interest is the speed of execution. Test cases are built to 
+	record time taken, joining threads to ensure that execution waits until a solution has completely
+	finished.
+	
+	Test data is recorded as plain text
+
+	Since testing is still a work in progress, there are a few improvement we still want to make 
+	to get more accurate data. Volume changes include more test cases, more layouts,
+	and more systems, while systematic changes include changing how we collect the data, such as 
+	taking the average time. Finally, we would like to find a way to test our Djikstra's against
+	the other algorithms, despite the differences we'll go into shortly.

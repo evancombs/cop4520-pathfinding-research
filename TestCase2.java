@@ -1,12 +1,13 @@
-// Runs implemented concurrent algorithms against eachother on a simple 4x4 layout.
-// Exports to output0.txt with results of execution.
+// Runs implemented concurrent algorithms against eachother on a large layout with
+// a path
+// Exports to output2.txt with results of execution.
 // Records only the time taken to complete execution.
 // Only compares concurrent implementation (implementations of Pathfinder)
 import java.io.*;
 import java.util.*;
 import java.lang.System;
 
-public class TestCase0
+public class TestCase2
 {
   public static void main(String [] args)
   {
@@ -15,7 +16,7 @@ public class TestCase0
     double start, end;
     ArrayList<Pathfinder> algorithms = new ArrayList<>();
 
-    Layout testLayout = new Layout("tests/layout1.txt");
+    Layout testLayout = new Layout("tests/layout4.txt");
 
     algorithms.add(new BFS());
     algorithms.add(new AParallel());
@@ -32,7 +33,7 @@ public class TestCase0
 
     try
     {
-      PrintWriter out = new PrintWriter("output0.txt");
+      PrintWriter out = new PrintWriter("output2.txt");
 
       for(i = 0; i < algorithms.size(); i++)
         out.println("" + algorithms.get(i).getClass().getName() + " " + times[i] + "ms");

@@ -1,0 +1,38 @@
+Dinner
+Flit-Path Symposium clothes
+COP4520 Assignment 3???
+COP4520 Video portion / presentation
+	Intro
+	"Our team members will take you through their areas of research and Im here to give you a introduction
+	Pathfinding intro, closely related to shortest path problem
+	Our implementation focuses on an aplpiaation that lends well to game pathfinding, but the theory
+		is applicable to many other problems.
+
+	"Hello everyone and welcome to our video presentation of our research project."
+
+	"Our project is an exploration of implementation and comparison of various pathfinding algorithm
+	in a concurrent context."
+
+	"Each of our team members will take you through their part of the project. I'm Evan Combs, and 
+	I'm here to give you an introduction to our project."
+	
+	"The goals of our project is mainly one of exploration and data collection.
+	We are interested in benefits and deficits of various algorithms, finding the best algorithsm
+	for a given circumstance, and what kind of applications such algorithms are suited for.
+	
+	"Additionally, we have a focus on the process of converting sequential algorthms to concurrent,
+	and the feasibility of doing so.
+	
+	"Our project is interested in pathfinding, with is a class of problems related to finding a 
+	way to get from one point to another."
+
+	"Pathfinding has many application in gaming, optimization, simulation and more, and is closely
+	related to the shortest path problem in graph theory. Many pathfinding problems are represented
+	and solved as graphs, which is the approach we take."
+
+	"In order to accurately compare differing algorithms we have built and implemented a shared
+	testing framework called Layout. Layout is essentially a ghraph representation data structure,
+	that all our algorithms are built to work on. By compalring them on the same data, we ensure
+	that we have a fair metric to examine them on.
+
+
