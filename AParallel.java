@@ -23,8 +23,9 @@ public class AParallel extends Pathfinder {
      Point start = new Point(0,0);
      Point end = new Point(3,4);
 
+     // Test case using the layout system
      AParallel aStar = new AParallel();
-     aStar.findPaths(new Layout("./tests/layout5.txt"));
+     aStar.findPaths(new Layout("./tests/layout1.txt"));
   }
 
   @Override
@@ -38,9 +39,8 @@ public class AParallel extends Pathfinder {
         map[i][j] = new Node(i, j, layout.positions[i][j] == -1);
 
     head.g = 0;
-
     Node res = aStar(head, target, map);
-    int n = 1;
+    int n = 100;
     long startTime, endTime, duration = 0;
     for (int i = 0 ; i < n; i++) {
       startTime = System.nanoTime();
@@ -56,6 +56,8 @@ public class AParallel extends Pathfinder {
   public Node aStar(Node start, Node target, Node[][] map){
       ExecutorService executor = Executors.newFixedThreadPool(8);
       List<Future<?>> futures = new ArrayList<Future<?>>();
+
+      int nodesVisited = 0;
 
       // Left, down-left, down, down-right, right, up-right, up, up-left
       int[] dx = {-1, -1, 0, 1, 1, 1, 0, -1};
@@ -74,7 +76,6 @@ public class AParallel extends Pathfinder {
               executor.shutdown();
               return n;
           }
-          // System.out.println("Start threads for " + n.x + " " + n.y);
           // Loop through all the neighbouring nodes
           for(int i = 0; i < dx.length; i++){
               // Check if the node is in the bounds of the map
@@ -87,6 +88,7 @@ public class AParallel extends Pathfinder {
               Runnable task = new AThread(m, n, moveCost[i], this);
               Future<?> f = executor.submit(task);
               futures.add(f);
+              // System.out.println("Started thread");
           }
           try{
             for(Future<?> future : futures){
@@ -141,10 +143,14 @@ class Node implements Comparable<Node> {
 
   @Override
   public int compareTo(Node n) {
-        return Double.compare(this.f, n.f);
+      return Double.compare(this.f, n.f);
   }
 
   public double calculateHeuristic(Node target){
-        return this.h;
+    int D = 1;
+    int D2 = 2;
+    int dx = Math.abs(x - target.x);
+    int dy = Math.abs(y - target.y);
+    return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
   }
 }

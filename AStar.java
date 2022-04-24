@@ -4,6 +4,7 @@ import java.awt.Point;
 public class AStar extends Pathfinder {
 
   public static void main(String[] args) {
+    //Basic test case
     int[][] testArr =
     {{1, 1, 1, 1},
      {1, -1, -1, -1},
@@ -14,8 +15,9 @@ public class AStar extends Pathfinder {
      Point start = new Point(0,0);
      Point end = new Point(3,4);
 
+     // Test case using the layout system
      AStar aStar = new AStar();
-     aStar.findPaths(new Layout("./tests/layout5.txt"));
+     aStar.findPaths(new Layout("./tests/layout1.txt"));
   }
 
   @Override
@@ -30,7 +32,7 @@ public class AStar extends Pathfinder {
 
     head.g = 0;
     Node res = aStar(head, target, map);
-    int n = 1;
+    int n = 100;
     long startTime, endTime, duration = 0;
     for (int i = 0 ; i < n; i++) {
       startTime = System.nanoTime();
@@ -58,9 +60,8 @@ public class AStar extends Pathfinder {
       while(!openList.isEmpty()){
           Node n = openList.peek();
           if(n.x == target.x && n.y == target.y){
-              return n;
+            return n;
           }
-
           for(int i = 0; i < dx.length; i++){
             if (n.x + dx[i] < 0 || n.x + dx[i] >= map.length) continue;
             if (n.y + dy[i] < 0 || n.y + dy[i] >= map[n.x].length) continue;
@@ -87,6 +88,16 @@ public class AStar extends Pathfinder {
           }
           openList.remove(n);
           closedList.add(n);
+          // try{
+          //   Thread.sleep(2000);
+          // }
+          // catch(Exception e) {
+          // }
+          // System.out.println("Node: " + "(" + n.x + ", " + n.y + ") " + n.f + " " + n.calculateHeuristic(target));
+          // for (Node e : Arrays.copyOf(openList.toArray(), openList.toArray().length, Node[].class)) {
+          //   System.out.print("(" + e.x + ", " + e.y + ", " + e.f + ")");
+          // }
+          // System.out.println();
       }
       return null;
   }
